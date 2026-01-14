@@ -179,7 +179,108 @@
         .badge-danger { background: #fee2e2; color: #991b1b; }
 
         /* ===================================================================
-           7.0 RESPONSIVE ENGINE (LAPTOP, TABLET, MOBILE)
+           7.0 DASHBOARD PANELS & WIDGETS (NEW)
+           =================================================================== 
+        */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .panel {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            border: 1px solid #e2e8f0;
+            box-shadow: var(--shadow-sm);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-header {
+            font-weight: 800;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: var(--primary);
+        }
+        
+        .panel-subtitle {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        /* Grid Spans */
+        .col-4 { grid-column: span 4; }
+        .col-6 { grid-column: span 6; }
+        .col-8 { grid-column: span 8; }
+        .col-12 { grid-column: span 12; }
+
+        @media (max-width: 1200px) {
+            .col-4, .col-6, .col-8 { grid-column: span 6; }
+        }
+        @media (max-width: 768px) {
+            .col-4, .col-6, .col-8 { grid-column: span 12; }
+        }
+
+        /* Quick Actions Widget */
+        .action-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        .btn-action {
+            padding: 16px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            text-align: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: var(--primary);
+            transition: var(--transition);
+        }
+        .btn-action:hover { background: var(--accent); color: white; border-color: var(--accent); transform: translateY(-2px); }
+        .btn-action i { display: block; font-size: 1.5rem; margin-bottom: 8px; color: var(--accent); }
+        .btn-action:hover i { color: white; }
+
+        /* Activity Feed */
+        .activity-item { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid #f1f5f9; }
+        .activity-item:last-child { border-bottom: none; }
+        .activity-icon { 
+            width: 36px; height: 36px; 
+            background: #eff6ff; 
+            border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center; 
+            color: var(--accent); flex-shrink: 0;
+        }
+        .activity-content p { font-size: 0.9rem; margin-bottom: 2px; }
+        .activity-content small { color: var(--text-muted); font-size: 0.75rem; }
+
+        /* Schedule Widget */
+        .schedule-item { 
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 14px; 
+            background: #f8fafc; 
+            border-radius: var(--radius-md); 
+            margin-bottom: 10px; 
+            border-left: 4px solid var(--accent); 
+        }
+        .schedule-time { font-weight: 800; font-size: 0.8rem; color: var(--text-muted); display: block; }
+        .schedule-subj { font-weight: 700; color: var(--primary); font-size: 1rem; }
+        .schedule-room { font-size: 0.8rem; color: var(--text-muted); }
+
+        /* Chart Container */
+        .chart-container { position: relative; height: 250px; width: 100%; }
+
+        /* ===================================================================
+           8.0 RESPONSIVE ENGINE
            =================================================================== 
         */
         @media (max-width: 1200px) {
@@ -189,7 +290,7 @@
 
         @media (max-width: 992px) {
             .workspace { grid-template-columns: 1fr; }
-            .sidebar-nav { display: none; } /* Use mobile menu */
+            .sidebar-nav { display: none; } 
             .sidebar-right { grid-template-columns: 1fr; }
         }
 
@@ -204,7 +305,7 @@
         }
 
         /* ===================================================================
-           8.0 ADMIN SPECIFIC STYLES
+           9.0 ADMIN SPECIFIC STYLES
            =================================================================== 
         */
         .photo-upload-label {
@@ -301,7 +402,7 @@
 
     <script>
         /* ===================================================================
-           9.0 CORE SYSTEM ENGINE
+           10.0 CORE SYSTEM ENGINE
            =================================================================== 
         */
 
@@ -427,32 +528,95 @@
                     case 'stu_grades': content.innerHTML = ui.stuGrades(); break;
                     default: content.innerHTML = `<div class="card"><h3>Module Under Construction</h3><p>Page: ${page}</p></div>`;
                 }
+                
+                // Initialize Charts after DOM update
+                setTimeout(ui.initCharts, 100);
             }
         };
 
         /* ===================================================================
-           10.0 INTERFACE GENERATORS (UI)
+           11.0 INTERFACE GENERATORS (UI) - ENHANCED
            =================================================================== 
         */
 
         const ui = {
+            // --- ADMIN DASHBOARD PANELS ---
             adminHome: () => {
-                const users = db.get().filter(u => u.role === 'student');
                 return `
-                    <div class="card">
-                        <div class="card-title"><i class="fa-solid fa-gauge-high"></i> Admin Overview</div>
-                        <div class="stats-grid">
-                            <div class="stat-item"><span class="stat-label">Enrollment</span><span class="stat-value">${users.length}</span></div>
-                            <div class="stat-item"><span class="stat-label">Faculty</span><span class="stat-value">24</span></div>
-                            <div class="stat-item"><span class="stat-label">Attendance %</span><span class="stat-value">94.2</span></div>
-                            <div class="stat-item"><span class="stat-label">Avg Grade</span><span class="stat-value">88.5</span></div>
-                        </div>
+                    <!-- Top Stats Row -->
+                    <div class="stats-grid" style="margin-bottom: 20px;">
+                        <div class="stat-item"><span class="stat-label">Total Students</span><span class="stat-value">1,245</span></div>
+                        <div class="stat-item"><span class="stat-label">Faculty Members</span><span class="stat-value">48</span></div>
+                        <div class="stat-item"><span class="stat-label">Avg Attendance</span><span class="stat-value">94.2%</span></div>
+                        <div class="stat-item"><span class="stat-label">Pending Fees</span><span class="stat-value">₱12.5k</span></div>
                     </div>
-                    <div class="card">
-                        <div class="card-title"><i class="fa-solid fa-clock-rotate-left"></i> Recent Activity</div>
-                        <div style="font-size:0.9rem;">
-                            <p style="padding:10px 0; border-bottom:1px solid #f1f5f9;">Student <b>${users[0].name}</b> updated their credentials.</p>
-                            <p style="padding:10px 0;">Admin <b>${sys.user.name}</b> generated quarterly report.</p>
+
+                    <div class="dashboard-grid">
+                        <!-- Main Chart Panel -->
+                        <div class="col-8">
+                            <div class="panel">
+                                <div class="panel-header">
+                                    <span><i class="fa-solid fa-chart-pie"></i> Enrollment by Track</span>
+                                    <select style="padding:4px; font-size:0.8rem; border:1px solid #e2e8f0; border-radius:4px;">
+                                        <option>S.Y. 2024-2025</option>
+                                        <option>S.Y. 2023-2024</option>
+                                    </select>
+                                </div>
+                                <div class="chart-container">
+                                    <canvas id="adminChartMain"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Live Activity Feed -->
+                        <div class="col-4">
+                            <div class="panel">
+                                <div class="panel-header"><i class="fa-solid fa-bolt"></i> Live Activity</div>
+                                <div style="overflow-y: auto; max-height: 300px;">
+                                    <div class="activity-item">
+                                        <div class="activity-icon"><i class="fa-solid fa-user-plus"></i></div>
+                                        <div class="activity-content">
+                                            <p><b>New Enrollment</b></p>
+                                            <small>Mark T. registered for STEM.</small>
+                                        </div>
+                                    </div>
+                                    <div class="activity-item">
+                                        <div class="activity-icon"><i class="fa-solid fa-file-invoice"></i></div>
+                                        <div class="activity-content">
+                                            <p><b>Payment Received</b></p>
+                                            <small>PHP 5,000.00 from Parent Portal.</small>
+                                        </div>
+                                    </div>
+                                    <div class="activity-item">
+                                        <div class="activity-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                                        <div class="activity-content">
+                                            <p><b>Low Attendance Alert</b></p>
+                                            <small>Section 12-A reported below 80%.</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Actions Panel -->
+                        <div class="col-12">
+                            <div class="panel">
+                                <div class="panel-header"><i class="fa-solid fa-rocket"></i> Administrative Quick Actions</div>
+                                <div class="action-grid">
+                                    <div class="btn-action" onclick="sys.notify('Opening Enrollment Module...')">
+                                        <i class="fa-solid fa-user-graduate"></i> Enroll New Student
+                                    </div>
+                                    <div class="btn-action" onclick="sys.notify('Generating PDF Report...')">
+                                        <i class="fa-solid fa-file-pdf"></i> Generate Report Card
+                                    </div>
+                                    <div class="btn-action" onclick="sys.notify('Opening Broadcast Console...')">
+                                        <i class="fa-solid fa-bullhorn"></i> Send Announcement
+                                    </div>
+                                    <div class="btn-action" onclick="sys.notify('Accessing Financial Ledger...')">
+                                        <i class="fa-solid fa-coins"></i> Manage Fees
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 `;
@@ -516,19 +680,89 @@
                 `;
             },
 
+            // --- STUDENT DASHBOARD PANELS ---
             stuHome: () => {
+                const u = sys.user;
                 return `
-                    <div class="card">
-                        <div class="card-title"><i class="fa-solid fa-star"></i> My Academic Status</div>
-                        <div class="stats-grid">
-                            <div class="stat-item"><span class="stat-label">Attendance</span><span class="stat-value">${sys.user.attendance}%</span></div>
-                            <div class="stat-item"><span class="stat-label">Subjects</span><span class="stat-value">4</span></div>
-                            <div class="stat-item"><span class="stat-label">Rank</span><span class="stat-value">#12</span></div>
-                        </div>
+                    <!-- Student Stats -->
+                    <div class="stats-grid" style="margin-bottom: 20px;">
+                        <div class="stat-item"><span class="stat-label">Attendance</span><span class="stat-value">${u.attendance}%</span></div>
+                        <div class="stat-item"><span class="stat-label">GWA</span><span class="stat-value">89.5</span></div>
+                        <div class="stat-item"><span class="stat-label">Rank</span><span class="stat-value">#12/45</span></div>
+                        <div class="stat-item"><span class="stat-label">Status</span><span class="stat-value" style="color:var(--success)">Active</span></div>
                     </div>
-                    <div class="card">
-                        <div class="card-title">Daily Schedule</div>
-                        <p style="color:var(--text-muted); font-size:0.9rem;">Today is Thursday. You have <b>4 classes</b> remaining.</p>
+
+                    <div class="dashboard-grid">
+                        <!-- Grades Visualization -->
+                        <div class="col-8">
+                            <div class="panel">
+                                <div class="panel-header">
+                                    <span><i class="fa-solid fa-chart-simple"></i> Academic Performance</span>
+                                    <span class="badge badge-success">Current SY</span>
+                                </div>
+                                <div class="chart-container">
+                                    <canvas id="stuChartMain"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Today's Schedule -->
+                        <div class="col-4">
+                            <div class="panel">
+                                <div class="panel-header"><i class="fa-solid fa-calendar-day"></i> Today's Classes</div>
+                                <div class="schedule-item">
+                                    <div>
+                                        <span class="schedule-time">07:30 - 09:00</span>
+                                        <span class="schedule-subj">MIL</span>
+                                    </div>
+                                    <span class="schedule-room">Rm 301</span>
+                                </div>
+                                <div class="schedule-item">
+                                    <div>
+                                        <span class="schedule-time">09:00 - 10:30</span>
+                                        <span class="schedule-subj">Programming</span>
+                                    </div>
+                                    <span class="schedule-room">Comp Lab 2</span>
+                                </div>
+                                <div class="schedule-item">
+                                    <div>
+                                        <span class="schedule-time">11:00 - 12:30</span>
+                                        <span class="schedule-subj">English</span>
+                                    </div>
+                                    <span class="schedule-room">Rm 105</span>
+                                </div>
+                                <div style="margin-top:15px; text-align:center;">
+                                    <a href="#" style="color:var(--accent); font-size:0.85rem; font-weight:700; text-decoration:none;">View Full Schedule <i class="fa-solid fa-arrow-right"></i></a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Student Tools / Fees -->
+                        <div class="col-6">
+                            <div class="panel">
+                                <div class="panel-header"><i class="fa-solid fa-wallet"></i> Account Balance</div>
+                                <div style="display:flex; justify-content:space-between; align-items:center; background:#f8fafc; padding:15px; border-radius:8px; margin-bottom:15px;">
+                                    <span style="font-weight:700;">Total Due</span>
+                                    <span style="font-size:1.2rem; font-weight:900; color:var(--primary);">₱ 2,450.00</span>
+                                </div>
+                                <button class="btn-auth" style="font-size:0.9rem; padding:10px;" onclick="sys.notify('Redirecting to Payment Portal...')">Pay Fees Online</button>
+                            </div>
+                        </div>
+
+                        <!-- Notifications -->
+                        <div class="col-6">
+                            <div class="panel">
+                                <div class="panel-header"><i class="fa-solid fa-envelope-open-text"></i> Messages</div>
+                                <div style="font-size:0.9rem; color:var(--text-muted);">
+                                    <p style="padding:10px 0; border-bottom:1px solid #f1f5f9; color:var(--text-main);">
+                                        <b>Registrar:</b> Your clearance is pending approval.
+                                    </p>
+                                    <p style="padding:10px 0; color:var(--text-main);">
+                                        <b>Advisor:</b> Please submit your project proposal.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 `;
             },
@@ -553,11 +787,73 @@
                         </div>
                     </div>
                 `;
+            },
+
+            // --- CHART INITIALIZATION ---
+            initCharts: () => {
+                // Destroy existing charts to prevent duplication
+                if(window.adminChartInstance) window.adminChartInstance.destroy();
+                if(window.stuChartInstance) window.stuChartInstance.destroy();
+
+                // Admin Chart: Enrollment by Track
+                const adminCanvas = document.getElementById('adminChartMain');
+                if(adminCanvas) {
+                    const ctx = adminCanvas.getContext('2d');
+                    window.adminChartInstance = new Chart(ctx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['STEM', 'TVL-ICT', 'TVL-HE', 'ABM', 'HUMSS', 'GAS'],
+                            datasets: [{
+                                data: [320, 280, 150, 210, 180, 105],
+                                backgroundColor: ['#2563eb', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#64748b'],
+                                borderWidth: 0
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { position: 'right', labels: { usePointStyle: true, font: { family: "'Plus Jakarta Sans', sans-serif" } } }
+                            }
+                        }
+                    });
+                }
+
+                // Student Chart: Grades
+                const stuCanvas = document.getElementById('stuChartMain');
+                if(stuCanvas) {
+                    const ctx = stuCanvas.getContext('2d');
+                    const grades = sys.user.grades;
+                    window.stuChartInstance = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: Object.keys(grades),
+                            datasets: [{
+                                label: 'Final Grade',
+                                data: Object.values(grades),
+                                backgroundColor: '#2563eb',
+                                borderRadius: 6,
+                                barThickness: 40
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: { beginAtZero: false, min: 60, max: 100, grid: { color: '#f1f5f9' } },
+                                x: { grid: { display: false } }
+                            },
+                            plugins: {
+                                legend: { display: false }
+                            }
+                        }
+                    });
+                }
             }
         };
 
         /* ===================================================================
-           11.0 ADMIN LOGIC HANDLERS
+           12.0 ADMIN LOGIC HANDLERS
            =================================================================== 
         */
 
